@@ -4,7 +4,15 @@ services:
     restart: unless-stopped
     container_name: pill-tracker
     ports:
-      - ${APP_PORT:-8080}:80
+      - ${APP_PORT:-8080}:3000
     environment:
-      APPS_SCRIPT_URL: ${APPS_SCRIPT_URL}
-      APPS_SCRIPT_TOKEN: ${APPS_SCRIPT_TOKEN}
+      # Bearer token for /api (Home Assistant and the NFC shortcut)
+      API_TOKEN: ${API_TOKEN}
+      TZ: ${TZ:-Europe/Copenhagen}
+    volumes:
+      - pill-tracker-data:/data
+    labels:
+      - "nautical-backup.group=pill-tracker"
+
+volumes:
+  pill-tracker-data:
