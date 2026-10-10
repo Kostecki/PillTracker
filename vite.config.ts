@@ -20,7 +20,12 @@ export default defineConfig({
 		}),
 		nitro(),
 		viteReact(),
-		VitePWA({
+		// Start builds the client, the server and Nitro as separate Vite
+		// environments. The part that writes sw.js belongs to the client only:
+		// running it again later rewrote sw.js after Nitro had recorded its
+		// size, so the server cut the file short. The rest (virtual:pwa-register)
+		// is needed everywhere the root route is bundled.
+		...VitePWA({
 			registerType: "autoUpdate",
 			// Where Start puts the files the server serves
 			outDir: ".output/public",
@@ -51,15 +56,23 @@ export default defineConfig({
 			},
 			workbox: {
 				globPatterns: ["**/*.{js,css,html,svg,png,ico}"],
-				navigateFallback: "/_shell.html",
-				// The SPA shell is written after the service worker is generated,
-				// so it's added by hand; the build time makes each build refresh it
-				additionalManifestEntries: [
-					{ url: "/_shell.html", revision: String(Date.now()) },
-				],
+				// Every page is the same shell (no server rendering, see
+				// src/start.ts), so "/" serves as the offline page for all of them.
+				// The server renders it, so it's added by hand; the build time
+				// makes each build refresh it.
+				navigateFallback: "/",
+				additionalManifestEntries: [{ url: "/", revision: String(Date.now()) }],
 				// The server's own endpoints must always go to the network
 				navigateFallbackDenylist: [/^\/api\//, /^\/_serverFn\//],
 			},
-		}),
+		}).map((plugin) =>
+			plugin.name === "vite-plugin-pwa:build"
+				? {
+						...plugin,
+						applyToEnvironment: (environment: { name: string }) =>
+							environment.name === "client",
+					}
+				: plugin,
+		),
 	],
 });
