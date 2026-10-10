@@ -2,8 +2,8 @@ import { ActionIcon } from "@mantine/core";
 import { IconTrash } from "@tabler/icons-react";
 import { useState } from "react";
 
-import type { Dose } from "~/lib/api";
 import { useDeleteDose } from "~/lib/queries";
+import type { Dose } from "~/lib/types";
 
 import { ConfirmModal } from "./ConfirmModal";
 
@@ -24,7 +24,7 @@ export function RemoveDose(props: { dose: Dose }) {
 			<ConfirmModal
 				opened={confirming}
 				title="Fjern denne dosis?"
-				message="Den bliver slettet fra arket."
+				message="Den bliver slettet fra historikken."
 				confirmLabel="Fjern"
 				color="red"
 				onConfirm={() => deleteDose.mutate(props.dose.id)}

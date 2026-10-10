@@ -42,7 +42,7 @@ function Today() {
 			<TodayStats />
 
 			{error && (
-				<Alert color="red" title="Kunne ikke hente fra arket" w="100%">
+				<Alert color="red" title="Kunne ikke hente data" w="100%">
 					{error.message}
 				</Alert>
 			)}

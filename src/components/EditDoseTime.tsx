@@ -4,9 +4,9 @@ import { IconPencil } from "@tabler/icons-react";
 import dayjs from "dayjs";
 import { useState } from "react";
 
-import type { Dose } from "~/lib/api";
 import { formatTime } from "~/lib/dates";
 import { useUpdateDose } from "~/lib/queries";
+import type { Dose } from "~/lib/types";
 
 /**
  * Change the time a dose was taken. Only the time: the day it counts for

@@ -1,32 +1,130 @@
+import "@mantine/core/styles.css";
+import "@mantine/dates/styles.css";
+import "@mantine/notifications/styles.css";
+import "dayjs/locale/da";
+
 import {
 	ActionIcon,
 	Badge,
 	Button,
+	ColorSchemeScript,
 	Container,
+	createTheme,
 	Group,
+	MantineProvider,
+	mantineHtmlProps,
 	Stack,
 	Title,
 } from "@mantine/core";
+import { DatesProvider } from "@mantine/dates";
 import { useDisclosure } from "@mantine/hooks";
+import { Notifications } from "@mantine/notifications";
 import { IconCalendar, IconPill, IconSettings } from "@tabler/icons-react";
+import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
 import {
 	createRootRoute,
+	HeadContent,
 	Link,
 	Outlet,
+	Scripts,
 	useLocation,
 } from "@tanstack/react-router";
-import type { ReactNode } from "react";
+import dayjs from "dayjs";
+import { type ReactNode, useEffect } from "react";
 
 import { SettingsModal } from "~/components/SettingsModal";
 import { useHasPausedChanges } from "~/lib/queries";
+import { persister, queryClient, WEEK } from "~/lib/queryClient";
+
+dayjs.locale("da");
+
+const theme = createTheme({ primaryColor: "blue" });
+const THEME_COLOR = "#228be6";
+const DESCRIPTION = "Har jeg taget min pille i dag?";
 
 export const Route = createRootRoute({
+	head: () => ({
+		meta: [
+			{ charSet: "utf-8" },
+			{
+				name: "viewport",
+				content: "width=device-width, initial-scale=1, viewport-fit=cover",
+			},
+			{ title: "Pill Tracker" },
+			{ name: "description", content: DESCRIPTION },
+			{ name: "theme-color", content: THEME_COLOR },
+		],
+		links: [
+			// Pangolin's auth cookie has to be sent with the manifest request,
+			// otherwise it gets redirected to the login page and install breaks
+			{
+				rel: "manifest",
+				href: "/manifest.webmanifest",
+				crossOrigin: "use-credentials",
+			},
+			{ rel: "icon", href: "/favicon.ico", sizes: "48x48" },
+			{ rel: "icon", href: "/icon.svg", sizes: "any", type: "image/svg+xml" },
+			{ rel: "apple-touch-icon", href: "/apple-touch-icon-180x180.png" },
+		],
+	}),
+	shellComponent: RootDocument,
 	component: RootLayout,
+	notFoundComponent: NotFound,
 });
+
+function NotFound() {
+	return (
+		<Stack align="center" gap="sm" pt="xl">
+			<Title order={4}>Siden findes ikke</Title>
+			<Button component={Link} to="/" variant="light">
+				Til forsiden
+			</Button>
+		</Stack>
+	);
+}
+
+function RootDocument(props: { children: ReactNode }) {
+	return (
+		<html lang="da" {...mantineHtmlProps}>
+			<head>
+				<HeadContent />
+				<ColorSchemeScript defaultColorScheme="auto" />
+			</head>
+			<body>
+				<MantineProvider theme={theme} defaultColorScheme="auto">
+					<Notifications position="top-center" />
+					<DatesProvider settings={{ locale: "da", firstDayOfWeek: 1 }}>
+						<PersistQueryClientProvider
+							client={queryClient}
+							persistOptions={{ persister, maxAge: WEEK, buster: "sqlite" }}
+							onSuccess={() =>
+								queryClient
+									.resumePausedMutations()
+									.then(() => queryClient.invalidateQueries())
+							}
+						>
+							{props.children}
+						</PersistQueryClientProvider>
+					</DatesProvider>
+				</MantineProvider>
+				<Scripts />
+			</body>
+		</html>
+	);
+}
 
 function RootLayout() {
 	const hasPausedChanges = useHasPausedChanges();
 	const [settingsOpened, settings] = useDisclosure();
+
+	// The service worker makes the app installable and work offline
+	useEffect(() => {
+		if (import.meta.env.PROD) {
+			import("virtual:pwa-register").then(({ registerSW }) =>
+				registerSW({ immediate: true }),
+			);
+		}
+	}, []);
 
 	return (
 		<Container size="xs" py="md" px="md">

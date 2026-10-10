@@ -2,3 +2,7 @@ minimumReleaseAge: 720
 allowBuilds:
   esbuild: true
   sharp: true
+overrides:
+  # 1.162.5 is listed as latest on npm but can't be fetched (2026-10-10); drop
+  # this once it installs
+  "@tanstack/history": 1.162.4

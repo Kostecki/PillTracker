@@ -12,8 +12,7 @@ on:
       - "vite.config.ts"
       - "postcss.config.cjs"
       - "pwa-assets.config.ts"
-      - "index.html"
-      - "docker/**"
+      - "vitest.config.ts"
       - ".github/workflows/deploy.yml"
       - "src/**"
       - "public/**"
@@ -66,6 +65,8 @@ jobs:
           cache-to: type=gha,mode=max
           provenance: false
           sbom: false
+          build-args: |
+            COMMIT_SHA=${{ github.sha }}
 
   deploy:
     needs: build-and-push-image

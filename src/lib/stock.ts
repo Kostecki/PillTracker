@@ -1,7 +1,7 @@
 import dayjs, { type Dayjs } from "dayjs";
 
-import type { Dose, StockEvent } from "./api";
 import { todayKey } from "./dates";
+import type { Dose, StockEvent } from "./types";
 
 export const DEFAULT_BOX_SIZE = 100;
 

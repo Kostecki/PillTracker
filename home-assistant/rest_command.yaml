@@ -1,24 +1,27 @@
-# Home Assistant side of Pill Tracker: lets HA read the sheet and log today's
-# pill. Used by the "Pillepåmindelse" automation and the "Pille taget" script.
+# Home Assistant side of Pill Tracker: lets HA check whether today's pill is
+# taken, and log it. Used by the "Pillepåmindelse" automation and the
+# "Pille taget" script.
 #
 # Add to configuration.yaml, and to secrets.yaml:
-#   pill_tracker_url: "https://script.google.com/macros/s/<id>/exec?token=<TOKEN>"
+#   pill_tracker_today_url: "http://<server>:<port>/api/today"
+#   pill_tracker_doses_url: "http://<server>:<port>/api/doses"
+#   pill_tracker_auth: "Bearer <API_TOKEN>"
+# HA can call the container directly on the local network, past Pangolin.
 # Then reload with Developer tools → YAML → REST commands (or restart).
 
 rest_command:
   pill_tracker_status:
-    url: !secret pill_tracker_url
+    url: !secret pill_tracker_today_url
     method: get
-    timeout: 20
+    headers:
+      authorization: !secret pill_tracker_auth
+    timeout: 10
   pill_tracker_log:
-    url: !secret pill_tracker_url
+    url: !secret pill_tracker_doses_url
     method: post
-    # text/plain keeps it a request Apps Script accepts as-is
-    content_type: "text/plain;charset=UTF-8"
-    timeout: 20
-    # Same shape as a log from the app; the day is HA's local date
-    payload: >-
-      {"action": "log",
-       "id": "ha-{{ now().strftime('%Y-%m-%d') }}",
-       "takenAt": "{{ utcnow().strftime('%Y-%m-%dT%H:%M:%SZ') }}",
-       "day": "{{ now().strftime('%Y-%m-%d') }}"}
+    headers:
+      authorization: !secret pill_tracker_auth
+    content_type: "application/json"
+    timeout: 10
+    # HA's local time with its offset, so the day is HA's local day
+    payload: '{"takenAt": "{{ now().isoformat() }}"}'

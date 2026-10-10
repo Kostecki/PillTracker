@@ -13,7 +13,6 @@ import { useQuery } from "@tanstack/react-query";
 import dayjs from "dayjs";
 import { useState } from "react";
 
-import type { StockEvent } from "~/lib/api";
 import {
 	dosesQuery,
 	newStockEvent,
@@ -34,6 +33,7 @@ import {
 	stockSummary,
 	totalSpent,
 } from "~/lib/stock";
+import type { StockEvent } from "~/lib/types";
 
 import { ConfirmModal } from "./ConfirmModal";
 import { EditStockModal } from "./EditStockModal";

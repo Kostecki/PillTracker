@@ -1,7 +1,10 @@
 node_modules
 dist
 dev-dist
+.output
+.nitro
+.tanstack
+data
 .git
 .github
 .env*
-public/config.json

@@ -3,8 +3,8 @@ import { DateTimePicker } from "@mantine/dates";
 import dayjs from "dayjs";
 import { useState } from "react";
 
-import type { StockEvent } from "~/lib/api";
 import { useUpdateStock } from "~/lib/queries";
+import type { StockEvent } from "~/lib/types";
 
 const PICKER_FORMAT = "YYYY-MM-DD HH:mm:ss";
 

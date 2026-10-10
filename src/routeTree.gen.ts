@@ -11,6 +11,9 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as HistoryRouteImport } from './routes/history'
+import { Route as ApiDosesRouteImport } from './routes/api/doses'
+import { Route as ApiImportRouteImport } from './routes/api/import'
+import { Route as ApiTodayRouteImport } from './routes/api/today'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -22,31 +25,59 @@ const HistoryRoute = HistoryRouteImport.update({
   path: '/history',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiDosesRoute = ApiDosesRouteImport.update({
+  id: '/api/doses',
+  path: '/api/doses',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiImportRoute = ApiImportRouteImport.update({
+  id: '/api/import',
+  path: '/api/import',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiTodayRoute = ApiTodayRouteImport.update({
+  id: '/api/today',
+  path: '/api/today',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/history': typeof HistoryRoute
+  '/api/doses': typeof ApiDosesRoute
+  '/api/import': typeof ApiImportRoute
+  '/api/today': typeof ApiTodayRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/history': typeof HistoryRoute
+  '/api/doses': typeof ApiDosesRoute
+  '/api/import': typeof ApiImportRoute
+  '/api/today': typeof ApiTodayRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/history': typeof HistoryRoute
+  '/api/doses': typeof ApiDosesRoute
+  '/api/import': typeof ApiImportRoute
+  '/api/today': typeof ApiTodayRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/history'
+  fullPaths: '/' | '/history' | '/api/doses' | '/api/import' | '/api/today'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/history'
-  id: '__root__' | '/' | '/history'
+  to: '/' | '/history' | '/api/doses' | '/api/import' | '/api/today'
+  id:
+    '__root__' | '/' | '/history' | '/api/doses' | '/api/import' | '/api/today'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   HistoryRoute: typeof HistoryRoute
+  ApiDosesRoute: typeof ApiDosesRoute
+  ApiImportRoute: typeof ApiImportRoute
+  ApiTodayRoute: typeof ApiTodayRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -65,13 +96,47 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof HistoryRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/doses': {
+      id: '/api/doses'
+      path: '/api/doses'
+      fullPath: '/api/doses'
+      preLoaderRoute: typeof ApiDosesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/import': {
+      id: '/api/import'
+      path: '/api/import'
+      fullPath: '/api/import'
+      preLoaderRoute: typeof ApiImportRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/today': {
+      id: '/api/today'
+      path: '/api/today'
+      fullPath: '/api/today'
+      preLoaderRoute: typeof ApiTodayRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   HistoryRoute: HistoryRoute,
+  ApiDosesRoute: ApiDosesRoute,
+  ApiImportRoute: ApiImportRoute,
+  ApiTodayRoute: ApiTodayRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

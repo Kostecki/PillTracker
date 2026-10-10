@@ -1,6 +1,6 @@
 import dayjs, { type Dayjs } from "dayjs";
 
-import type { Dose, Settings } from "./api";
+import type { Dose, Settings } from "./types";
 
 /** Current local date on this device, as YYYY-MM-DD. */
 export function todayKey() {

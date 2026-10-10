@@ -7,5 +7,7 @@ export default defineConfig({
 	},
 	test: {
 		include: ["src/**/*.test.ts"],
+		// Fixed, so date logic tests don't depend on the machine's time zone
+		env: { TZ: "Europe/Copenhagen" },
 	},
 });
