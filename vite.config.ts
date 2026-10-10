@@ -1,10 +1,33 @@
+import { execSync } from "node:child_process";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 import viteReact from "@vitejs/plugin-react";
 import { nitro } from "nitro/vite";
 import { defineConfig } from "vite";
 import { VitePWA } from "vite-plugin-pwa";
 
+/**
+ * The commit this build is from: COMMIT_SHA in CI (the Docker build has no
+ * .git), otherwise asked from git, otherwise "dev".
+ */
+function commitSha() {
+	if (process.env.COMMIT_SHA) return process.env.COMMIT_SHA;
+	try {
+		return execSync("git rev-parse HEAD", {
+			stdio: ["ignore", "pipe", "ignore"],
+		})
+			.toString()
+			.trim();
+	} catch {
+		return "dev";
+	}
+}
+
 export default defineConfig({
+	// Shown in the settings dialog, to tell which version is running
+	define: {
+		__COMMIT_SHA__: JSON.stringify(commitSha()),
+		__BUILD_TIME__: JSON.stringify(new Date().toISOString()),
+	},
 	server: {
 		port: 3000,
 	},

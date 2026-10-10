@@ -10,6 +10,9 @@ RUN --mount=type=cache,target=/root/.local/share/pnpm/store \
 	pnpm install --frozen-lockfile
 
 COPY . .
+# The commit being built, shown in the app's settings
+ARG COMMIT_SHA=dev
+ENV COMMIT_SHA=$COMMIT_SHA
 RUN pnpm test && pnpm run build
 
 # ---- runtime ----

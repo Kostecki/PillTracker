@@ -65,6 +65,8 @@ jobs:
           cache-to: type=gha,mode=max
           provenance: false
           sbom: false
+          build-args: |
+            COMMIT_SHA=${{ github.sha }}
 
   deploy:
     needs: build-and-push-image
