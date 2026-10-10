@@ -18,9 +18,16 @@ export async function withToken(
 	if (!expected) {
 		return Response.json({ error: "API_TOKEN is not set" }, { status: 503 });
 	}
-	const given = request.headers.get("authorization")?.replace(/^Bearer /, "");
-	if (!given || !sameText(given, expected)) {
-		return Response.json({ error: "unauthorized" }, { status: 401 });
+	// Says what's wrong, without hinting at the token itself
+	const header = request.headers.get("authorization");
+	const given = bearerToken(header);
+	if (!given || !sameText(given, expected.trim())) {
+		const error = !header
+			? "unauthorized: no Authorization header"
+			: !given
+				? 'unauthorized: the Authorization header must be "Bearer <token>"'
+				: "unauthorized: wrong token";
+		return Response.json({ error }, { status: 401 });
 	}
 
 	try {
@@ -43,6 +50,16 @@ export async function jsonBody<T>(request: Request): Promise<Partial<T>> {
 	} catch {
 		throw new InvalidInput("body is not JSON");
 	}
+}
+
+/**
+ * The token from an `Authorization: Bearer <token>` header. Lenient about
+ * what phones tend to type: the scheme's case (HTTP says it doesn't matter)
+ * and spaces around the token.
+ */
+export function bearerToken(header: string | null) {
+	const match = /^\s*bearer\s+(\S+)\s*$/i.exec(header ?? "");
+	return match?.[1];
 }
 
 function sameText(a: string, b: string) {
