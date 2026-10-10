@@ -46,7 +46,6 @@ export function SettingsModal(props: { opened: boolean; onClose: () => void }) {
 
 function Version() {
 	const short = __COMMIT_SHA__.slice(0, 7);
-	const built = dayjs(__BUILD_TIME__).format("D. MMM YYYY [kl.] HH:mm");
 
 	return (
 		<Text size="xs" c="dimmed">
@@ -61,8 +60,7 @@ function Version() {
 				>
 					{short}
 				</Anchor>
-			)}{" "}
-			· bygget {built}
+			)}
 		</Text>
 	);
 }
