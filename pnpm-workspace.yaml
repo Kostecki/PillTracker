@@ -1,0 +1,4 @@
+minimumReleaseAge: 720
+allowBuilds:
+  esbuild: true
+  sharp: true

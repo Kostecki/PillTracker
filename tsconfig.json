@@ -1,0 +1,24 @@
+{
+	"include": [
+		"src",
+		"vite.config.ts",
+		"vitest.config.ts",
+		"pwa-assets.config.ts"
+	],
+	"compilerOptions": {
+		"strict": true,
+		"jsx": "react-jsx",
+		"module": "ESNext",
+		"moduleResolution": "Bundler",
+		"lib": ["DOM", "DOM.Iterable", "ES2023"],
+		"isolatedModules": true,
+		"skipLibCheck": true,
+		"target": "ES2022",
+		"forceConsistentCasingInFileNames": true,
+		"paths": {
+			"~/*": ["./src/*"]
+		},
+		"noEmit": true,
+		"types": ["vite/client", "vite-plugin-pwa/react"]
+	}
+}

@@ -1,0 +1,96 @@
+{
+	"$schema": "https://biomejs.dev/schemas/2.5.15/schema.json",
+	"vcs": {
+		"enabled": false,
+		"clientKind": "git",
+		"useIgnoreFile": false
+	},
+	"files": {
+		"ignoreUnknown": false,
+		"includes": [
+			"**",
+			"!**/.react-router",
+			"!**/dev-dist",
+			"!**/.vite",
+			"!**/.output",
+			"!**/dist",
+			"!**/routeTree.gen.ts",
+			"!**/node_modules",
+			"!**/build"
+		]
+	},
+	"formatter": {
+		"enabled": true,
+		"indentStyle": "tab"
+	},
+	"assist": {
+		"actions": {
+			"source": {
+				"organizeImports": {
+					"level": "on",
+					"options": {
+						"groups": [
+							[":NODE:", ":PACKAGE:", ":PACKAGE_WITH_PROTOCOL:"],
+							":BLANK_LINE:",
+							[
+								"~/types",
+								"~/types/**",
+								"@/types",
+								"@/types/**",
+								"./+types",
+								"./+types/**",
+								"../+types",
+								"../+types/**",
+								"./$types",
+								"./$types/**",
+								"../$types",
+								"../$types/**"
+							],
+							":BLANK_LINE:",
+							":ALIAS:",
+							":BLANK_LINE:",
+							["../**", "./**"]
+						]
+					}
+				}
+			}
+		}
+	},
+	"linter": {
+		"enabled": true,
+		"includes": [
+			"**",
+			"!**/node_modules",
+			"!**/build",
+			"!**/.react-router",
+			"!**/dev-dist",
+			"!**/.output",
+			"!**/dist",
+			"!**/routeTree.gen.ts"
+		],
+		"rules": {
+			"preset": "recommended",
+			"correctness": {
+				"noUnusedVariables": "error",
+				"noUnusedImports": "error"
+			}
+		}
+	},
+	"javascript": {
+		"formatter": {
+			"quoteStyle": "double"
+		}
+	},
+	"overrides": [
+		{
+			"includes": ["apps-script/**"],
+			"linter": {
+				"rules": {
+					"correctness": {
+						"noUnusedVariables": "off"
+					}
+				}
+			}
+		}
+	]
+}
