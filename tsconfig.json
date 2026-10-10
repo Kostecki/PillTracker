@@ -19,6 +19,6 @@
 			"~/*": ["./src/*"]
 		},
 		"noEmit": true,
-		"types": ["vite/client", "vite-plugin-pwa/react"]
+		"types": ["vite/client", "vite-plugin-pwa/client", "node"]
 	}
 }

@@ -7,39 +7,36 @@ import {
 
 import {
 	addStock,
-	type Dose,
 	deleteDose,
 	deleteStock,
-	fetchSheet,
+	fetchData,
 	logDose,
-	type Settings,
-	type SheetData,
-	type StockEvent,
 	setSetting,
 	updateDose,
 	updateStock,
 } from "./api";
 import { todayKey } from "./dates";
+import type { AppData, Dose, Settings, StockEvent } from "./types";
 
-// The whole sheet is fetched in one request, so doses and stock share a key
-const sheetKey = ["sheet"] as const;
+// Everything is fetched in one request, so doses and stock share a key
+const dataKey = ["data"] as const;
 
 export const dosesQuery = queryOptions({
-	queryKey: sheetKey,
-	queryFn: fetchSheet,
+	queryKey: dataKey,
+	queryFn: fetchData,
 	select: (data) =>
 		data.doses.toSorted((a, b) => a.takenAt.localeCompare(b.takenAt)),
 });
 
 export const stockQuery = queryOptions({
-	queryKey: sheetKey,
-	queryFn: fetchSheet,
+	queryKey: dataKey,
+	queryFn: fetchData,
 	select: (data) => data.stock.toSorted((a, b) => a.at.localeCompare(b.at)),
 });
 
 export const settingsQuery = queryOptions({
-	queryKey: sheetKey,
-	queryFn: fetchSheet,
+	queryKey: dataKey,
+	queryFn: fetchData,
 	// Cached data from before settings existed has none
 	select: (data): Settings => data.settings ?? {},
 });
@@ -69,8 +66,8 @@ export function registerMutations(queryClient: QueryClient) {
 	});
 
 	const setSettings = (settings: Settings) =>
-		queryClient.setQueryData<SheetData>(
-			sheetKey,
+		queryClient.setQueryData<AppData>(
+			dataKey,
 			(old) => old && { ...old, settings },
 		);
 
@@ -79,9 +76,9 @@ export function registerMutations(queryClient: QueryClient) {
 		{
 			mutationFn: ({ key, value }) => setSetting(key, value),
 			onMutate: async ({ key, value }) => {
-				await queryClient.cancelQueries({ queryKey: sheetKey });
+				await queryClient.cancelQueries({ queryKey: dataKey });
 				const previous =
-					queryClient.getQueryData<SheetData>(sheetKey)?.settings ?? {};
+					queryClient.getQueryData<AppData>(dataKey)?.settings ?? {};
 				const next = { ...previous };
 				if (value) next[key] = value;
 				else delete next[key];
@@ -91,15 +88,15 @@ export function registerMutations(queryClient: QueryClient) {
 			onError: (_error, _change, previous) => {
 				if (previous) setSettings(previous);
 			},
-			onSettled: () => queryClient.invalidateQueries({ queryKey: sheetKey }),
+			onSettled: () => queryClient.invalidateQueries({ queryKey: dataKey }),
 		},
 	);
 }
 
 type ListKey = "doses" | "stock";
-type Item<K extends ListKey> = SheetData[K][number];
+type Item<K extends ListKey> = AppData[K][number];
 
-/** Optimistic add/remove/update by id for one list in the sheet data. */
+/** Optimistic add/remove/update by id for one list in the app data. */
 function registerListMutations<K extends ListKey>(
 	queryClient: QueryClient,
 	field: K,
@@ -113,17 +110,17 @@ function registerListMutations<K extends ListKey>(
 	},
 ) {
 	const update = (fn: (items: Item<K>[]) => Item<K>[]) =>
-		queryClient.setQueryData<SheetData>(
-			sheetKey,
+		queryClient.setQueryData<AppData>(
+			dataKey,
 			(old) =>
-				old && ({ ...old, [field]: fn(old[field] as Item<K>[]) } as SheetData),
+				old && ({ ...old, [field]: fn(old[field] as Item<K>[]) } as AppData),
 		);
-	const settle = () => queryClient.invalidateQueries({ queryKey: sheetKey });
+	const settle = () => queryClient.invalidateQueries({ queryKey: dataKey });
 
 	queryClient.setMutationDefaults<void, Error, Item<K>>(options.addKey, {
 		mutationFn: options.add,
 		onMutate: async (item) => {
-			await queryClient.cancelQueries({ queryKey: sheetKey });
+			await queryClient.cancelQueries({ queryKey: dataKey });
 			update((items) =>
 				items.some((i) => i.id === item.id) ? items : [...items, item],
 			);
@@ -138,9 +135,9 @@ function registerListMutations<K extends ListKey>(
 		{
 			mutationFn: options.remove,
 			onMutate: async (id) => {
-				await queryClient.cancelQueries({ queryKey: sheetKey });
+				await queryClient.cancelQueries({ queryKey: dataKey });
 				const removed = (
-					queryClient.getQueryData<SheetData>(sheetKey)?.[field] as
+					queryClient.getQueryData<AppData>(dataKey)?.[field] as
 						| Item<K>[]
 						| undefined
 				)?.find((i) => i.id === id);
@@ -163,9 +160,9 @@ function registerListMutations<K extends ListKey>(
 		{
 			mutationFn: options.update,
 			onMutate: async (item) => {
-				await queryClient.cancelQueries({ queryKey: sheetKey });
+				await queryClient.cancelQueries({ queryKey: dataKey });
 				const previous = (
-					queryClient.getQueryData<SheetData>(sheetKey)?.[field] as
+					queryClient.getQueryData<AppData>(dataKey)?.[field] as
 						| Item<K>[]
 						| undefined
 				)?.find((i) => i.id === item.id);

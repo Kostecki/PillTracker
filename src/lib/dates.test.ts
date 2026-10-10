@@ -1,7 +1,6 @@
 import dayjs from "dayjs";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { Dose } from "./api";
 import {
 	adherence,
 	byDay,
@@ -13,6 +12,7 @@ import {
 	todayKey,
 	typicalTime,
 } from "./dates";
+import type { Dose } from "./types";
 
 beforeEach(() => {
 	vi.useFakeTimers({ now: new Date("2026-10-10T12:00:00") });

@@ -3,7 +3,6 @@ import "dayjs/locale/da";
 import dayjs from "dayjs";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { Dose, StockEvent } from "./api";
 import {
 	balance,
 	changeFor,
@@ -17,6 +16,7 @@ import {
 	stockSummary,
 	totalSpent,
 } from "./stock";
+import type { Dose, StockEvent } from "./types";
 
 dayjs.locale("da");
 
@@ -52,6 +52,7 @@ function app() {
 			type,
 			amount,
 			change: changeFor(type, amount, doses, stock),
+			price: null,
 		};
 		stock = [...stock, event];
 		return event.id;
@@ -249,6 +250,7 @@ describe("prices", () => {
 		type: "count",
 		amount: 50,
 		change: 0,
+		price: null,
 	};
 
 	it("uses the last box with a price for the price per pill", () => {

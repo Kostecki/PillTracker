@@ -1,5 +1,6 @@
-import { tanstackRouter } from "@tanstack/router-plugin/vite";
+import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 import viteReact from "@vitejs/plugin-react";
+import { nitro } from "nitro/vite";
 import { defineConfig } from "vite";
 import { VitePWA } from "vite-plugin-pwa";
 
@@ -11,14 +12,20 @@ export default defineConfig({
 		tsconfigPaths: true,
 	},
 	plugins: [
-		tanstackRouter({ target: "react", autoCodeSplitting: true }),
+		tanstackStart({
+			srcDirectory: "src",
+			// A single-user app behind a login gains nothing from server
+			// rendering, and an SPA shell is simplest to cache offline
+			spa: { enabled: true },
+		}),
+		nitro(),
 		viteReact(),
 		VitePWA({
 			registerType: "autoUpdate",
-			// Pangolin's auth cookie has to be sent with the manifest request,
-			// otherwise it gets redirected to the login page and install breaks.
-			useCredentials: true,
-			pwaAssets: { config: true },
+			// Where Start puts the files the server serves
+			outDir: ".output/public",
+			// Registered from the root route; there's no index.html to inject into
+			injectRegister: false,
 			manifest: {
 				name: "Pill Tracker",
 				short_name: "Piller",
@@ -28,13 +35,30 @@ export default defineConfig({
 				background_color: "#ffffff",
 				display: "standalone",
 				start_url: "/",
+				// Generated into public/ by `pnpm generate-pwa-assets` (see
+				// pwa-assets.config.ts); rerun it when public/icon.svg changes
+				icons: [
+					{ src: "pwa-64x64.png", sizes: "64x64", type: "image/png" },
+					{ src: "pwa-192x192.png", sizes: "192x192", type: "image/png" },
+					{ src: "pwa-512x512.png", sizes: "512x512", type: "image/png" },
+					{
+						src: "maskable-icon-512x512.png",
+						sizes: "512x512",
+						type: "image/png",
+						purpose: "maskable",
+					},
+				],
 			},
 			workbox: {
 				globPatterns: ["**/*.{js,css,html,svg,png,ico}"],
-				navigateFallback: "/index.html",
-				// config.json is written by the container at startup and must
-				// never be served from the precache.
-				globIgnores: ["**/config.json"],
+				navigateFallback: "/_shell.html",
+				// The SPA shell is written after the service worker is generated,
+				// so it's added by hand; the build time makes each build refresh it
+				additionalManifestEntries: [
+					{ url: "/_shell.html", revision: String(Date.now()) },
+				],
+				// The server's own endpoints must always go to the network
+				navigateFallbackDenylist: [/^\/api\//, /^\/_serverFn\//],
 			},
 		}),
 	],
