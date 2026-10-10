@@ -41,7 +41,20 @@ export default defineConfig({
 			// rendering, and an SPA shell is simplest to cache offline
 			spa: { enabled: true },
 		}),
-		nitro(),
+		nitro({
+			// Caches in front of the server (the browser, Cloudflare, Pangolin)
+			// must always revalidate files whose name stays the same between
+			// builds; a cached sw.js kept serving an old, broken one. Hashed
+			// assets change name when they change, so they can be kept forever.
+			routeRules: {
+				"/sw.js": { headers: { "cache-control": "no-cache" } },
+				"/manifest.webmanifest": { headers: { "cache-control": "no-cache" } },
+				"/assets/**": {
+					headers: { "cache-control": "public, max-age=31536000, immutable" },
+				},
+				"/**": { headers: { "cache-control": "no-cache" } },
+			},
+		}),
 		viteReact(),
 		// Start builds the client, the server and Nitro as separate Vite
 		// environments. The part that writes sw.js belongs to the client only:
