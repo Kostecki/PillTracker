@@ -1,5 +1,6 @@
 import { Box, Flex, Group, Indicator, Paper, Stack, Text } from "@mantine/core";
 import { Calendar } from "@mantine/dates";
+import { useMediaQuery } from "@mantine/hooks";
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import dayjs from "dayjs";
@@ -30,6 +31,11 @@ function History() {
 	const { data: settings = {} } = useQuery(settingsQuery);
 	const [selectedDay, setSelectedDay] = useState(todayKey);
 	const [month, setMonth] = useState(() => dayjs().startOf("month"));
+	// Room for the day details beside the calendar. The app renders only in
+	// the browser, so the real value is known on the first render.
+	const wide = useMediaQuery("(min-width: 30em)", false, {
+		getInitialValueInEffect: false,
+	});
 
 	const days = byDay(doses);
 	const selectedDose = days.get(selectedDay);
@@ -63,10 +69,12 @@ function History() {
 				/>
 			</Group>
 
-			{/* Day details sit beside the calendar, and wrap below it on phones */}
+			{/* On phones the calendar fills the width with the day below it; on
+			    wider screens the day sits beside it */}
 			<Paper withBorder p="sm">
-				<Flex gap="md" wrap="wrap">
+				<Flex gap="md" direction={wide ? "row" : "column"}>
 					<Calendar
+						fullWidth={!wide}
 						nextLabel="Næste måned"
 						previousLabel="Forrige måned"
 						minDate={firstDay}
@@ -88,7 +96,7 @@ function History() {
 						)}
 					/>
 
-					<Box flex="1 1 160px" p="xs">
+					<Box flex={wide ? "1 1 160px" : undefined} p="xs">
 						<Stack gap="md">
 							<Text size="sm" fw={500}>
 								{capitalize(dayjs(selectedDay).format("dddd [d.] D. MMMM"))}
