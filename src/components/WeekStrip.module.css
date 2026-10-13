@@ -1,0 +1,36 @@
+.week {
+	display: flex;
+	gap: 12px;
+}
+
+.day {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 4px;
+}
+
+.dot {
+	width: 28px;
+	height: 28px;
+	border-radius: 50%;
+	display: grid;
+	place-items: center;
+	border: 2px solid var(--mantine-color-default-border);
+
+	&[data-state="taken"] {
+		border-color: var(--mantine-color-green-filled);
+		background-color: var(--mantine-color-green-filled);
+		color: var(--mantine-color-white);
+	}
+
+	&[data-state="pending"] {
+		border-style: dashed;
+		border-color: var(--mantine-primary-color-filled);
+	}
+
+	&[data-state="before"] {
+		border-color: transparent;
+		background-color: var(--mantine-color-default-hover);
+	}
+}

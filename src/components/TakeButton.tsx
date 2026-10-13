@@ -19,6 +19,7 @@ export function TakeButton(props: {
 			disabled={props.disabled || props.taken}
 			data-taken={props.taken || undefined}
 			data-animate={animate || undefined}
+			aria-label={props.taken ? "Taget" : "Registrer pille"}
 			onClick={() => {
 				setAnimate(true);
 				navigator.vibrate?.(20);
@@ -29,13 +30,11 @@ export function TakeButton(props: {
 				<circle cx="50" cy="50" r="47.1" pathLength={1} />
 			</svg>
 
-			<span className={classes.face} aria-hidden={props.taken}>
-				<IconPill size={64} stroke={1.75} />
-				<span className={classes.label}>Registrer pille</span>
+			<span className={classes.face} aria-hidden>
+				<IconPill size={96} stroke={1.5} />
 			</span>
-			<span className={classes.face} data-done aria-hidden={!props.taken}>
-				<IconCheck size={64} stroke={2.5} />
-				<span className={classes.label}>Taget</span>
+			<span className={classes.face} data-done aria-hidden>
+				<IconCheck size={96} stroke={2.25} />
 			</span>
 		</UnstyledButton>
 	);

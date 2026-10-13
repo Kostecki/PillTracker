@@ -71,10 +71,7 @@
 /* Both faces share one grid cell and cross-fade */
 .face {
 	grid-area: 1 / 1;
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	gap: 4px;
+	display: grid;
 	color: var(--mantine-primary-color-filled);
 
 	&[data-done] {
@@ -92,12 +89,6 @@
 		opacity: 1;
 		transform: scale(1);
 	}
-}
-
-.label {
-	font-size: var(--mantine-font-size-lg);
-	font-weight: 600;
-	line-height: 1.2;
 }
 
 /* Transitions only run after a tap */

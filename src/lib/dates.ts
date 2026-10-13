@@ -83,14 +83,6 @@ export function adherence(
 	return { taken, due };
 }
 
-/** The usual time of day a dose is taken over the last `days` days, as HH:mm. */
-export function typicalTime(doses: Dose[], days = 30) {
-	const since = dayjs()
-		.subtract(days - 1, "day")
-		.format("YYYY-MM-DD");
-	return medianTime(doses.filter((d) => d.day >= since));
-}
-
 /**
  * The usual time of day of these doses, as HH:mm. The median, so one late
  * evening doesn't drag it.

@@ -50,7 +50,7 @@ export const Route = createRootRoute({
 				name: "viewport",
 				content: "width=device-width, initial-scale=1, viewport-fit=cover",
 			},
-			{ title: "Pill Tracker" },
+			{ title: "Dagens pille" },
 			{ name: "description", content: DESCRIPTION },
 			{ name: "theme-color", content: THEME_COLOR },
 		],
@@ -130,7 +130,7 @@ function RootLayout() {
 		<Container size="xs" py="md" px="md">
 			<Stack gap="lg">
 				<Group justify="space-between">
-					<Title order={3}>Pill Tracker</Title>
+					<Title order={3}>Dagens pille</Title>
 					<Group gap="xs">
 						{hasPausedChanges && (
 							<Badge color="yellow" variant="light">

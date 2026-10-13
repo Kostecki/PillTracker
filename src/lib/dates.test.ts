@@ -10,7 +10,6 @@ import {
 	medianTime,
 	startDay,
 	todayKey,
-	typicalTime,
 } from "./dates";
 import type { Dose } from "./types";
 
@@ -114,28 +113,6 @@ describe("adherence", () => {
 				september.endOf("month"),
 			),
 		).toEqual({ taken: 0, due: 0 });
-	});
-});
-
-describe("typicalTime", () => {
-	it("is the median time, so one late dose doesn't drag it", () => {
-		const doses = [
-			dose("2026-10-07", "08:00"),
-			dose("2026-10-08", "08:20"),
-			dose("2026-10-09", "23:00"),
-		];
-		expect(typicalTime(doses)).toBe("08:20");
-	});
-
-	it("averages the middle two for an even count", () => {
-		expect(
-			typicalTime([dose("2026-10-09", "08:00"), dose("2026-10-10", "09:00")]),
-		).toBe("08:30");
-	});
-
-	it("only looks at the last 30 days", () => {
-		expect(typicalTime([dose("2026-09-01", "20:00")])).toBeUndefined();
-		expect(typicalTime([dose("2026-09-11", "20:00")])).toBe("20:00");
 	});
 });
 

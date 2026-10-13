@@ -68,7 +68,7 @@ export default defineConfig({
 			// Registered from the root route; there's no index.html to inject into
 			injectRegister: false,
 			manifest: {
-				name: "Pill Tracker",
+				name: "Dagens pille",
 				short_name: "Piller",
 				description: "Har jeg taget min pille i dag?",
 				lang: "da",

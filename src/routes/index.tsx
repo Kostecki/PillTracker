@@ -5,7 +5,7 @@ import { createFileRoute } from "@tanstack/react-router";
 
 import { StockLine } from "~/components/StockLine";
 import { TakeButton } from "~/components/TakeButton";
-import { TodayStats } from "~/components/TodayStats";
+import { WeekStrip } from "~/components/WeekStrip";
 import { formatTime, todayKey } from "~/lib/dates";
 import { dosesQuery, newDose, useLogDose } from "~/lib/queries";
 
@@ -37,9 +37,9 @@ function Today() {
 				<Text c="dimmed">Endnu ikke taget i dag</Text>
 			)}
 
-			<StockLine />
+			<WeekStrip />
 
-			<TodayStats />
+			<StockLine />
 
 			{error && (
 				<Alert color="red" title="Kunne ikke hente data" w="100%">
