@@ -50,7 +50,7 @@ export const Route = createRootRoute({
 				name: "viewport",
 				content: "width=device-width, initial-scale=1, viewport-fit=cover",
 			},
-			{ title: "Dagens pille" },
+			{ title: "Pille" },
 			{ name: "description", content: DESCRIPTION },
 			{ name: "theme-color", content: THEME_COLOR },
 		],
