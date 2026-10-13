@@ -11,7 +11,9 @@ import {
 	lastBoxSize,
 	priceHistory,
 	pricePerPill,
+	stockBarColor,
 	stockColor,
+	stockPercent,
 	stockStatus,
 	stockSummary,
 	totalSpent,
@@ -222,6 +224,53 @@ describe("stockSummary and stockColor", () => {
 		expect(stockSummary(a.status())).toBe(
 			"1 pille tilbage · rækker til 10. okt.",
 		);
+	});
+});
+
+describe("stockPercent and stockBarColor", () => {
+	/** The status, which these tests always have since a box was opened */
+	const statusOf = (a: ReturnType<typeof app>) => {
+		const status = a.status();
+		if (!status) throw new Error("no stock tracked");
+		return status;
+	};
+
+	it("empties from a full box", () => {
+		const a = app();
+		a.box(28);
+		expect(stockPercent(statusOf(a), a.stock())).toBe(100);
+
+		a.take();
+		expect(stockPercent(statusOf(a), a.stock())).toBeCloseTo((27 / 28) * 100);
+	});
+
+	it("counts pills left over from before a refill as full", () => {
+		const a = app();
+		a.box(100);
+		a.take();
+		a.box(100);
+		expect(a.left()).toBe(199);
+		expect(stockPercent(statusOf(a), a.stock())).toBe(100);
+	});
+
+	it("is empty with no pills left", () => {
+		const a = app();
+		a.box(1);
+		a.take();
+		expect(stockPercent(statusOf(a), a.stock())).toBe(0);
+	});
+
+	it("is green, then orange when low and red when empty", () => {
+		const a = app();
+		a.box(43);
+		a.take();
+		expect(stockBarColor(statusOf(a))).toBe("green");
+
+		a.count(2);
+		expect(stockBarColor(statusOf(a))).toBe("orange");
+
+		a.count(0);
+		expect(stockBarColor(statusOf(a))).toBe("red");
 	});
 });
 

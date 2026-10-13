@@ -117,6 +117,23 @@ export function stockSummary(status: StockStatus | null) {
 	return `${pills(status.remaining)} tilbage · rækker til ${status.lastDay.format("D. MMM")}`;
 }
 
+/**
+ * How full the supply is, 0–100, for a bar that empties as pills are taken.
+ * A full box is 100%; pills left over from before a refill can push the
+ * count past one box, so that counts as full too.
+ */
+export function stockPercent(status: StockStatus, stock: StockEvent[]) {
+	if (status.remaining <= 0) return 0;
+	const full = Math.max(lastBoxSize(stock), status.remaining);
+	return (status.remaining / full) * 100;
+}
+
+/** Mantine color for the stock bar: same steps as the summary, green when fine */
+export function stockBarColor(status: StockStatus) {
+	if (status.remaining <= 0) return "red";
+	return status.low ? "orange" : "green";
+}
+
 /** Mantine color for the summary: orange when running low */
 export function stockColor(status: StockStatus | null) {
 	if (!status) return "dimmed";
