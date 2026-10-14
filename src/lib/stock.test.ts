@@ -199,7 +199,7 @@ describe("stockSummary and stockColor", () => {
 		a.box(43);
 		a.take();
 		expect(stockSummary(a.status())).toBe(
-			"42 piller tilbage · rækker til 21. nov.",
+			"42 piller tilbage · rækker til 21. november",
 		);
 		expect(stockColor(a.status())).toBe("dimmed");
 	});
@@ -209,7 +209,7 @@ describe("stockSummary and stockColor", () => {
 		a.box(2);
 		expect(stockColor(a.status())).toBe("orange");
 		expect(stockSummary(a.status())).toBe(
-			"2 piller tilbage · rækker til 11. okt.",
+			"2 piller tilbage · rækker til 11. oktober",
 		);
 
 		a.take(1);
@@ -222,7 +222,7 @@ describe("stockSummary and stockColor", () => {
 		const a = app();
 		a.box(1);
 		expect(stockSummary(a.status())).toBe(
-			"1 pille tilbage · rækker til 10. okt.",
+			"1 pille tilbage · rækker til 10. oktober",
 		);
 	});
 });

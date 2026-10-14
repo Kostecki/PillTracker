@@ -114,7 +114,7 @@ export function pills(count: number) {
 export function stockSummary(status: StockStatus | null) {
 	if (!status) return "Hold styr på beholdningen";
 	if (status.remaining <= 0) return "Ingen piller tilbage";
-	return `${pills(status.remaining)} tilbage · rækker til ${status.lastDay.format("D. MMM")}`;
+	return `${pills(status.remaining)} tilbage · rækker til ${status.lastDay.format("D. MMMM")}`;
 }
 
 /**
