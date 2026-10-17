@@ -3,16 +3,13 @@ services:
     image: ghcr.io/kostecki/pill-tracker:latest
     restart: unless-stopped
     container_name: pill-tracker
+    hostname: pill-tracker-docker-tower
     ports:
-      - ${APP_PORT:-8080}:3000
+      - 3009:3000
     environment:
-      # Bearer token for /api (Home Assistant and the NFC shortcut)
       API_TOKEN: ${API_TOKEN}
-      TZ: ${TZ:-Europe/Copenhagen}
+      TZ: ${TZ}
     volumes:
-      - pill-tracker-data:/data
+      - ${DATA_DIR:-.}/data:/data
     labels:
       - "nautical-backup.group=pill-tracker"
-
-volumes:
-  pill-tracker-data:
