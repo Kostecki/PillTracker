@@ -3,6 +3,7 @@ services:
     image: ghcr.io/kostecki/pill-tracker:latest
     restart: unless-stopped
     container_name: pill-tracker
+    hostname: ${APP_HOSTNAME:-pill-tracker}
     ports:
       - ${APP_PORT:-8080}:3000
     environment:
@@ -10,9 +11,6 @@ services:
       API_TOKEN: ${API_TOKEN}
       TZ: ${TZ:-Europe/Copenhagen}
     volumes:
-      - pill-tracker-data:/data
+      - ${DATA_DIR:-.}/data:/data
     labels:
       - "nautical-backup.group=pill-tracker"
-
-volumes:
-  pill-tracker-data:
