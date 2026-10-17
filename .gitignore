@@ -10,6 +10,3 @@ dev-dist
 
 # Local development database
 data
-
-# Komodo: env written at deploy, and local data when running compose without DATA_DIR
-/data/
