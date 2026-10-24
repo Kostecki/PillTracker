@@ -3,7 +3,7 @@ services:
     image: ghcr.io/kostecki/pill-tracker:latest
     restart: unless-stopped
     container_name: pill-tracker
-    hostname: ${APP_HOSTNAME:-pill-tracker}
+    hostname: pill-tracker
     ports:
       - ${APP_PORT:-8080}:3000
     environment:
