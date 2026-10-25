@@ -37,17 +37,20 @@ vite-plugin-pwa, and SQLite via Node's built-in `node:sqlite`.
   | Endpoint | Used by | Does |
   | --- | --- | --- |
   | `GET /api/today` | HA reminder | `{ day, taken, takenAt }` for the server's local day |
-  | `POST /api/doses` | HA "Taget" button, NFC shortcut | Logs today's pill. Body optional: `takenAt` (ISO with offset) defaults to now. A second log for the day is ignored. |
+  | `POST /api/doses` | HA (Pilleknap), NFC shortcut | Logs today's pill. Body optional: `takenAt` (ISO with offset) defaults to now. A second log for the day is ignored. |
   | `POST /api/import` | Moving data in | Imports `{ doses, stock, settings }`; existing ids are replaced, so it can run twice |
 
-## Home Assistant and the NFC sticker
+## Home Assistant, the Pilleknap and the NFC sticker
 
-Home Assistant reminds you on your phone if today's pill isn't logged by the
-`Pillepåmindelse` time (21:00), then every 30 minutes until 23:00. The
-notification's **Taget** button logs the pill. HA calls the API through two
+Home Assistant reminds you via Pushover if today's pill isn't logged by the
+`Pillepåmindelse` time (21:00), then every 30 minutes until 23:00. Pressing
+the **Pilleknap** (an Aqara wireless mini switch on Zigbee2MQTT) once logs the
+pill: the three bathroom spots blink green when the API confirms today's dose,
+and a Pushover message says so if logging failed. HA calls the API through two
 `rest_command`s; see
 [`home-assistant/rest_command.yaml`](home-assistant/rest_command.yaml). The
-automations live in HA (`Pillepåmindelse` and `Pillepåmindelse - Taget`).
+automations and the script live in HA (`Pillepåmindelse`,
+`Pillepåmindelse - Taget` and `Pille taget`).
 
 An NFC sticker on the pill box logs the pill with one tap: an iOS Shortcuts
 automation (NFC, *Run Immediately*) runs a shortcut that sends

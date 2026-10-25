@@ -3,9 +3,9 @@ import { createFileRoute } from "@tanstack/react-router";
 import type { LogDoseInput } from "~/server/store";
 
 /**
- * POST /api/doses: logs today's pill, for the reminder's "Taget" button and
- * the NFC shortcut. All fields are optional: `takenAt` defaults to now and
- * the day comes from it. A second log for the same day is ignored.
+ * POST /api/doses: logs today's pill, for the Pilleknap (via Home Assistant)
+ * and the NFC shortcut. All fields are optional: `takenAt` defaults to now
+ * and the day comes from it. A second log for the same day is ignored.
  */
 export const Route = createFileRoute("/api/doses")({
 	server: {
