@@ -15,12 +15,19 @@ on:
       - "pwa-assets.config.ts"
       - "vitest.config.ts"
       - ".github/workflows/deploy.yml"
+      - ".github/workflows/ci.yml"
+      - "mise.toml"
+      - "biome.json"
       - "src/**"
       - "public/**"
   workflow_dispatch:
 
 jobs:
+  check:
+    uses: ./.github/workflows/ci.yml
+
   build-and-push-image:
+    needs: check
     runs-on: ubuntu-latest
 
     permissions:

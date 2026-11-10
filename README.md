@@ -34,11 +34,11 @@ vite-plugin-pwa, and SQLite via Node's built-in `node:sqlite`.
 - **A REST API** under `/api` for callers outside the app, with
   `Authorization: Bearer <API_TOKEN>`:
 
-  | Endpoint | Used by | Does |
-  | --- | --- | --- |
-  | `GET /api/today` | HA reminder | `{ day, taken, takenAt }` for the server's local day |
-  | `POST /api/doses` | HA (Pilleknap), NFC shortcut | Logs today's pill. Body optional: `takenAt` (ISO with offset) defaults to now. A second log for the day is ignored. |
-  | `POST /api/import` | Moving data in | Imports `{ doses, stock, settings }`; existing ids are replaced, so it can run twice |
+  | Endpoint           | Used by                      | Does                                                                                                                |
+  | ------------------ | ---------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+  | `GET /api/today`   | HA reminder                  | `{ day, taken, takenAt }` for the server's local day                                                                |
+  | `POST /api/doses`  | HA (Pilleknap), NFC shortcut | Logs today's pill. Body optional: `takenAt` (ISO with offset) defaults to now. A second log for the day is ignored. |
+  | `POST /api/import` | Moving data in               | Imports `{ doses, stock, settings }`; existing ids are replaced, so it can run twice                                |
 
 ## Home Assistant, the Pilleknap and the NFC sticker
 
@@ -53,7 +53,7 @@ automations and the script live in HA (`Pillepåmindelse`,
 `Pillepåmindelse - Taget` and `Pille taget`).
 
 An NFC sticker on the pill box logs the pill with one tap: an iOS Shortcuts
-automation (NFC, *Run Immediately*) runs a shortcut that sends
+automation (NFC, _Run Immediately_) runs a shortcut that sends
 `POST /api/doses` with the `Authorization` header and a JSON body
 `{ "takenAt": <current date as ISO 8601 with time> }`.
 
@@ -83,10 +83,10 @@ The container listens on port 3000 and keeps the database in the
 `pill-tracker-data` volume at `/data`, labelled for nautical-backup. See
 [`docker-compose.yml`](docker-compose.yml).
 
-| Variable | Value |
-| --- | --- |
-| `API_TOKEN` | Bearer token for `/api` (`openssl rand -hex 32`) |
-| `TZ` | Decides "today" for `/api/today`; defaults to `Europe/Copenhagen` |
+| Variable    | Value                                                             |
+| ----------- | ----------------------------------------------------------------- |
+| `API_TOKEN` | Bearer token for `/api` (`openssl rand -hex 32`)                  |
+| `TZ`        | Decides "today" for `/api/today`; defaults to `Europe/Copenhagen` |
 
 ## Moving from the Google Sheet
 
