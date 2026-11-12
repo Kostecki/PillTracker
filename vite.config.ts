@@ -22,6 +22,9 @@ function commitSha() {
 	}
 }
 
+/** The URL the offline copy of the app shell is cached under */
+const OFFLINE_SHELL = "/?shell";
+
 export default defineConfig({
 	// Shown in the settings dialog, to tell which version is running
 	define: {
@@ -92,14 +95,31 @@ export default defineConfig({
 			},
 			workbox: {
 				globPatterns: ["**/*.{js,css,html,svg,png,ico}"],
+				// Pages always come from the network, so that when Pangolin's
+				// login has expired its redirect to the login page reaches the
+				// browser. Serving a cached shell instead hid the redirect: the app
+				// opened, but every call to the server failed until the service
+				// worker was removed.
 				// Every page is the same shell (no server rendering, see
-				// src/start.ts), so "/" serves as the offline page for all of them.
+				// src/start.ts), so one cached copy serves as the offline page for
+				// all of them. It's cached as "/?shell" rather than "/", because the
+				// precache answers requests for its own URLs before any other route.
 				// The server renders it, so it's added by hand; the build time
 				// makes each build refresh it.
-				navigateFallback: "/",
-				additionalManifestEntries: [{ url: "/", revision: String(Date.now()) }],
-				// The server's own endpoints must always go to the network
-				navigateFallbackDenylist: [/^\/api\//, /^\/_serverFn\//],
+				navigateFallback: null,
+				additionalManifestEntries: [
+					{ url: OFFLINE_SHELL, revision: String(Date.now()) },
+				],
+				runtimeCaching: [
+					{
+						urlPattern: ({ request, url }) =>
+							request.mode === "navigate" &&
+							!url.pathname.startsWith("/api/") &&
+							!url.pathname.startsWith("/_serverFn/"),
+						handler: "NetworkOnly",
+						options: { precacheFallback: { fallbackURL: OFFLINE_SHELL } },
+					},
+				],
 			},
 		}).map((plugin) =>
 			plugin.name === "vite-plugin-pwa:build"

@@ -1,9 +1,10 @@
 import { notifications } from "@mantine/notifications";
 import { createAsyncStoragePersister } from "@tanstack/query-async-storage-persister";
-import { MutationCache, QueryClient } from "@tanstack/react-query";
+import { MutationCache, QueryCache, QueryClient } from "@tanstack/react-query";
 import type { Persister } from "@tanstack/react-query-persist-client";
 
 import { registerMutations } from "./queries";
+import { reloadIfLoggedOut } from "./session";
 
 export const WEEK = 1000 * 60 * 60 * 24 * 7;
 
@@ -22,15 +23,18 @@ export const queryClient = new QueryClient({
 				error instanceof TypeError && failureCount < 3,
 		},
 	},
+	queryCache: new QueryCache({ onError: reloadIfLoggedOut }),
 	// Every failed save ends up here, after the change has been rolled back
 	mutationCache: new MutationCache({
-		onError: (error) =>
+		onError: (error) => {
+			reloadIfLoggedOut(error);
 			notifications.show({
 				color: "red",
 				title: "Kunne ikke gemme",
 				message: error.message,
 				autoClose: 8000,
-			}),
+			});
+		},
 	}),
 });
 registerMutations(queryClient);
