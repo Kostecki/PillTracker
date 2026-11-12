@@ -1,7 +1,7 @@
 # ---- build: the app and its server, as a self-contained .output ----
 # Pure JavaScript (SQLite is built into Node), so it builds natively and the
 # output runs on any platform
-FROM --platform=$BUILDPLATFORM node:26.13.0-alpine AS build
+FROM --platform=$BUILDPLATFORM node:26.13.1-alpine AS build
 WORKDIR /app
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
@@ -17,7 +17,7 @@ ENV COMMIT_SHA=$COMMIT_SHA
 RUN pnpm test && pnpm run build
 
 # ---- runtime ----
-FROM node:26.13.0-alpine AS runtime
+FROM node:26.13.1-alpine AS runtime
 # Time zone data, so TZ decides what "today" is on the server
 RUN apk add --no-cache tzdata
 
