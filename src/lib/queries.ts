@@ -16,7 +16,7 @@ import {
 	updateStock,
 } from "./api";
 import { todayKey } from "./dates";
-import type { AppData, Dose, Settings, StockEvent } from "./types";
+import type { AppData, Blister, Dose, Settings, StockEvent } from "./types";
 
 // Everything is fetched in one request, so doses and stock share a key
 const dataKey = ["data"] as const;
@@ -236,6 +236,7 @@ export function newStockEvent(
 	amount: number,
 	change: number,
 	price: number | null = null,
+	blister: Blister | null = null,
 ): StockEvent {
 	return {
 		id: crypto.randomUUID(),
@@ -244,5 +245,6 @@ export function newStockEvent(
 		amount,
 		change,
 		price,
+		blister,
 	};
 }

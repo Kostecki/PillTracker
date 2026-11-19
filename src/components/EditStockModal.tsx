@@ -6,6 +6,8 @@ import { useState } from "react";
 import { useUpdateStock } from "~/lib/queries";
 import type { StockEvent } from "~/lib/types";
 
+import { useBlisterFields } from "./BlisterFields";
+
 const PICKER_FORMAT = "YYYY-MM-DD HH:mm:ss";
 
 /** Edit when a stock entry happened and its amount. */
@@ -40,6 +42,7 @@ function EditForm(props: { event: StockEvent; onClose: () => void }) {
 	const [amount, setAmount] = useState<string | number>(props.event.amount);
 	const [price, setPrice] = useState<string | number>(props.event.price ?? "");
 	const isRefill = props.event.type === "refill";
+	const blister = useBlisterFields(props.event.blister);
 
 	const min = isRefill ? 1 : 0;
 	const valid =
@@ -47,7 +50,8 @@ function EditForm(props: { event: StockEvent; onClose: () => void }) {
 		typeof amount === "number" &&
 		Number.isInteger(amount) &&
 		amount >= min &&
-		(price === "" || (typeof price === "number" && price >= 0));
+		(price === "" || (typeof price === "number" && price >= 0)) &&
+		blister.valid;
 
 	const save = () => {
 		if (!valid) return;
@@ -58,6 +62,7 @@ function EditForm(props: { event: StockEvent; onClose: () => void }) {
 			// Shift the change by as much as the amount was corrected
 			change: props.event.change + (amount - props.event.amount),
 			price: isRefill && typeof price === "number" ? price : null,
+			blister: isRefill ? blister.blister : null,
 		});
 		props.onClose();
 	};
@@ -95,6 +100,7 @@ function EditForm(props: { event: StockEvent; onClose: () => void }) {
 					inputMode="decimal"
 				/>
 			)}
+			{isRefill && blister.fields}
 			<Group justify="flex-end">
 				<Button variant="default" onClick={props.onClose}>
 					Annuller

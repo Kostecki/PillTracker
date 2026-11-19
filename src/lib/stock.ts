@@ -1,7 +1,7 @@
 import dayjs, { type Dayjs } from "dayjs";
 
 import { todayKey } from "./dates";
-import type { Dose, StockEvent } from "./types";
+import type { Blister, Dose, StockEvent } from "./types";
 
 export const DEFAULT_BOX_SIZE = 100;
 
@@ -52,6 +52,60 @@ export function stockStatus(
 /** Size of the last box opened, as the default for the next one */
 export function lastBoxSize(stock: StockEvent[]) {
 	return stock.findLast((e) => e.type === "refill")?.amount ?? DEFAULT_BOX_SIZE;
+}
+
+/** Layout of the last box that has one, as the default for the next one */
+export function lastBlister(stock: StockEvent[]) {
+	return stock.findLast((e) => e.type === "refill" && e.blister)?.blister;
+}
+
+export type SheetStatus = Blister & {
+	/** Pills already popped from the sheet in use, row by row */
+	taken: number;
+	/** Full sheets still waiting after the one in use, in every box */
+	unopened: number;
+};
+
+/**
+ * The blister sheet pills are coming from now. Boxes are used up oldest
+ * first, so while more is left than the newest box holds, the pills come
+ * from the box before it. A sheet is finished before the next is started.
+ * Uses the layout of the box in use, or the latest known one if it has none.
+ */
+export function currentSheet(
+	doses: Dose[],
+	stock: StockEvent[],
+): SheetStatus | null {
+	const remaining = balance(doses, stock);
+	if (stock.length === 0 || remaining <= 0) return null;
+
+	const boxes = stock.filter((e) => e.type === "refill");
+	let left = remaining;
+	let i = boxes.length - 1;
+	while (i > 0 && left > boxes[i].amount) {
+		left -= boxes[i].amount;
+		i--;
+	}
+
+	const fallback = lastBlister(stock);
+	const sheetSize = (box: StockEvent | undefined) => {
+		const b = box?.blister ?? fallback;
+		return b ? b.rows * b.columns : 0;
+	};
+
+	const blister = boxes[i]?.blister ?? fallback;
+	if (!blister) return null;
+	const size = sheetSize(boxes[i]);
+	// A sheet that's exactly used up means a fresh one is next
+	const onSheet = left % size || size;
+
+	// The rest of this box, then every newer box, still unopened
+	let unopened = Math.floor((left - onSheet) / size);
+	for (const box of boxes.slice(i + 1)) {
+		const boxSheet = sheetSize(box);
+		unopened += Math.floor(box.amount / boxSheet);
+	}
+	return { ...blister, taken: size - onSheet, unopened };
 }
 
 /** Price of the last box that has one, as the default for the next one */

@@ -30,6 +30,7 @@ const box: StockEvent = {
 	amount: 100,
 	change: 100,
 	price: 37.35,
+	blister: null,
 };
 
 describe("doses", () => {
@@ -132,6 +133,30 @@ describe("stock", () => {
 		expect(readAll(db).stock).toEqual([]);
 	});
 
+	it("stores how a box's blister sheets are laid out", () => {
+		addStock(db, { ...box, blister: { rows: 2, columns: 7 } });
+		expect(readAll(db).stock[0].blister).toEqual({ rows: 2, columns: 7 });
+
+		updateStock(db, { ...box, blister: null });
+		expect(readAll(db).stock[0].blister).toBeNull();
+	});
+
+	it("treats a missing blister as none", () => {
+		const { blister: _, ...old } = box;
+		addStock(db, old);
+		expect(readAll(db).stock[0].blister).toBeNull();
+	});
+
+	it("never stores a blister on a count", () => {
+		addStock(db, {
+			...box,
+			id: "count",
+			type: "count",
+			blister: { rows: 2, columns: 7 },
+		});
+		expect(readAll(db).stock[0].blister).toBeNull();
+	});
+
 	it("never stores a price on a count", () => {
 		addStock(db, { ...box, id: "count", type: "count", price: 12 });
 		expect(readAll(db).stock[0].price).toBeNull();
@@ -142,6 +167,12 @@ describe("stock", () => {
 			"invalid amount",
 		);
 		expect(() => addStock(db, { ...box, price: -1 })).toThrow("invalid price");
+		expect(() =>
+			addStock(db, { ...box, blister: { rows: 0, columns: 7 } }),
+		).toThrow("invalid blister");
+		expect(() =>
+			addStock(db, { ...box, blister: { rows: 2, columns: 1.5 } }),
+		).toThrow("invalid blister");
 		expect(() =>
 			addStock(db, { ...box, type: "gift" as StockEvent["type"] }),
 		).toThrow("invalid type");

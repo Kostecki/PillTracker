@@ -3,6 +3,7 @@ import { useDocumentVisibility } from "@mantine/hooks";
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 
+import { BlisterPack } from "~/components/BlisterPack";
 import { StockLine } from "~/components/StockLine";
 import { TakeButton } from "~/components/TakeButton";
 import { WeekStrip } from "~/components/WeekStrip";
@@ -40,6 +41,8 @@ function Today() {
 			<WeekStrip />
 
 			<StockLine />
+
+			<BlisterPack />
 
 			{error && (
 				<Alert color="red" title="Kunne ikke hente data" w="100%">

@@ -25,7 +25,15 @@ export type StockEvent = {
 	change: number;
 	/** What a box cost in kr. Optional, and only for refills. */
 	price: number | null;
+	/**
+	 * How the box's blister sheets are laid out. Optional, and only for
+	 * refills. Missing on entries cached from before it existed.
+	 */
+	blister?: Blister | null;
 };
+
+/** One blister sheet: `rows` rows of `columns` pills */
+export type Blister = { rows: number; columns: number };
 
 export type Settings = {
 	/** First day of tracking (YYYY-MM-DD). Earlier days don't count as missed. */

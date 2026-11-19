@@ -1,0 +1,67 @@
+/* The open sheet in front of the unopened ones, spread out sideways like cards */
+.pile {
+	/*
+	 * Up to 20px apart, closer when there are many. The whole spread stays
+	 * within 160px and within what's left of the page next to the sheet
+	 * (the page is at most 540px wide with 16px padding on each side).
+	 */
+	--sheet-width: calc(var(--columns) * 30px + 18px);
+	--room: min(160px, calc(min(100vw, 540px) - 32px - var(--sheet-width)));
+	--spread: max(0px, min(20px, calc(var(--room) / max(var(--behind), 1))));
+
+	position: relative;
+	max-width: 100%;
+	/* Room for the sheets peeking out, so the whole spread stays centered */
+	margin-right: calc(var(--behind) * var(--spread));
+}
+
+.behind,
+.sheet {
+	border-radius: var(--mantine-radius-md);
+	background-color: light-dark(
+		var(--mantine-color-gray-1),
+		var(--mantine-color-dark-6)
+	);
+	border: 1px solid var(--mantine-color-default-border);
+}
+
+.behind {
+	position: absolute;
+	inset: 0;
+	box-shadow: 0 1px 3px rgb(0 0 0 / 0.12);
+	transform: translateX(calc(var(--layer) * var(--spread)));
+}
+
+.sheet {
+	position: relative;
+	box-shadow: 0 1px 3px rgb(0 0 0 / 0.15);
+	display: grid;
+	gap: 8px;
+	padding: 12px;
+	max-width: 100%;
+}
+
+.pill {
+	width: 100%;
+	aspect-ratio: 1;
+	border-radius: 50%;
+	background: radial-gradient(
+		circle at 35% 30%,
+		var(--mantine-color-white),
+		light-dark(var(--mantine-color-gray-3), var(--mantine-color-gray-5))
+	);
+	box-shadow: 0 1px 2px rgb(0 0 0 / 0.25);
+
+	/* Popped: an empty, torn-open pocket */
+	&[data-state="taken"] {
+		background: transparent;
+		box-shadow: none;
+		border: 2px dashed var(--mantine-color-default-border);
+	}
+
+	/* Today's pill, still to be taken */
+	&[data-state="next"] {
+		outline: 2px solid var(--mantine-primary-color-filled);
+		outline-offset: 2px;
+	}
+}

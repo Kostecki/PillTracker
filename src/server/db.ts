@@ -30,6 +30,11 @@ const MIGRATIONS = [
 		value TEXT NOT NULL
 	);
 	`,
+	`
+	-- How a box's blister sheets are laid out, refills only
+	ALTER TABLE stock ADD COLUMN blister_rows INTEGER CHECK (blister_rows IS NULL OR blister_rows >= 1);
+	ALTER TABLE stock ADD COLUMN blister_columns INTEGER CHECK (blister_columns IS NULL OR blister_columns >= 1);
+	`,
 ];
 
 export type Database = DatabaseSync;

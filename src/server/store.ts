@@ -1,4 +1,4 @@
-import type { AppData, Dose, Settings, StockEvent } from "~/lib/types";
+import type { AppData, Blister, Dose, Settings, StockEvent } from "~/lib/types";
 
 import { type Database, transaction } from "./db";
 
@@ -8,6 +8,13 @@ export class InvalidInput extends Error {}
 const DAY = /^\d{4}-\d{2}-\d{2}$/;
 const STOCK_TYPES = ["refill", "count"] as const;
 const SETTING_KEYS = ["startDay"] as const satisfies (keyof Settings)[];
+/** Rows or columns on a blister sheet; anything bigger is a typo */
+const MAX_BLISTER_SIDE = 20;
+
+type StockRow = Omit<StockEvent, "blister"> & {
+	blisterRows: number | null;
+	blisterColumns: number | null;
+};
 
 export function readAll(db: Database): AppData {
 	const doses = db
@@ -15,9 +22,9 @@ export function readAll(db: Database): AppData {
 		.all() as Dose[];
 	const stock = db
 		.prepare(
-			"SELECT id, at, type, amount, change, price FROM stock ORDER BY at",
+			"SELECT id, at, type, amount, change, price, blister_rows AS blisterRows, blister_columns AS blisterColumns FROM stock ORDER BY at",
 		)
-		.all() as StockEvent[];
+		.all() as StockRow[];
 	const settings = Object.fromEntries(
 		(
 			db.prepare("SELECT key, value FROM settings").all() as {
@@ -29,7 +36,13 @@ export function readAll(db: Database): AppData {
 	// Rows come back as null-prototype objects; make them plain for callers
 	return {
 		doses: doses.map((d) => ({ ...d })),
-		stock: stock.map((s) => ({ ...s })),
+		stock: stock.map(({ blisterRows, blisterColumns, ...s }) => ({
+			...s,
+			blister:
+				blisterRows != null && blisterColumns != null
+					? { rows: blisterRows, columns: blisterColumns }
+					: null,
+		})),
 		settings,
 	};
 }
@@ -79,9 +92,17 @@ export function deleteDose(db: Database, id: string) {
 }
 
 export function addStock(db: Database, event: StockEvent) {
+	insertStock(db, "INSERT OR IGNORE", event);
+}
+
+function insertStock(
+	db: Database,
+	insert: "INSERT OR IGNORE" | "INSERT OR REPLACE",
+	event: StockEvent,
+) {
 	const valid = validStock(event);
 	db.prepare(
-		"INSERT OR IGNORE INTO stock (id, at, type, amount, change, price) VALUES (?, ?, ?, ?, ?, ?)",
+		`${insert} INTO stock (id, at, type, amount, change, price, blister_rows, blister_columns) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
 	).run(
 		valid.id,
 		valid.at,
@@ -89,6 +110,8 @@ export function addStock(db: Database, event: StockEvent) {
 		valid.amount,
 		valid.change,
 		valid.price,
+		valid.blister?.rows ?? null,
+		valid.blister?.columns ?? null,
 	);
 }
 
@@ -96,9 +119,17 @@ export function updateStock(db: Database, event: StockEvent) {
 	const valid = validStock(event);
 	const { changes } = db
 		.prepare(
-			"UPDATE stock SET at = ?, amount = ?, change = ?, price = ? WHERE id = ?",
+			"UPDATE stock SET at = ?, amount = ?, change = ?, price = ?, blister_rows = ?, blister_columns = ? WHERE id = ?",
 		)
-		.run(valid.at, valid.amount, valid.change, valid.price, valid.id);
+		.run(
+			valid.at,
+			valid.amount,
+			valid.change,
+			valid.price,
+			valid.blister?.rows ?? null,
+			valid.blister?.columns ?? null,
+			valid.id,
+		);
 	if (changes === 0) throw new InvalidInput(`not found: ${event.id}`);
 }
 
@@ -135,17 +166,10 @@ export function importData(db: Database, data: Partial<AppData>) {
 			).run(dose.id, parseTime(dose.takenAt, "takenAt"), dose.day);
 		}
 		for (const event of data.stock ?? []) {
-			const valid = validStock({ ...event, price: event.price ?? null });
-			db.prepare(
-				"INSERT OR REPLACE INTO stock (id, at, type, amount, change, price) VALUES (?, ?, ?, ?, ?, ?)",
-			).run(
-				valid.id,
-				valid.at,
-				valid.type,
-				valid.amount,
-				valid.change,
-				valid.price,
-			);
+			insertStock(db, "INSERT OR REPLACE", {
+				...event,
+				price: event.price ?? null,
+			});
 		}
 		for (const [key, value] of Object.entries(data.settings ?? {})) {
 			setSetting(db, key as keyof Settings, value ?? "");
@@ -203,6 +227,12 @@ function validStock(event: StockEvent): StockEvent {
 	if (price != null && !(Number.isFinite(price) && price >= 0)) {
 		throw new InvalidInput(`invalid price: ${price}`);
 	}
+	const blister = event.blister ?? null;
+	if (blister && !(validSide(blister.rows) && validSide(blister.columns))) {
+		throw new InvalidInput(
+			`invalid blister: ${blister.rows}×${blister.columns}`,
+		);
+	}
 	return {
 		id: event.id,
 		at: parseTime(event.at, "at"),
@@ -210,5 +240,13 @@ function validStock(event: StockEvent): StockEvent {
 		amount,
 		change,
 		price: type === "refill" ? (price ?? null) : null,
+		blister:
+			type === "refill" && blister
+				? { rows: blister.rows, columns: blister.columns }
+				: null,
 	};
+}
+
+function validSide(n: Blister["rows"]) {
+	return Number.isInteger(n) && n >= 1 && n <= MAX_BLISTER_SIDE;
 }

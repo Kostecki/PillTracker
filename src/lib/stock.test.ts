@@ -6,6 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
 	balance,
 	changeFor,
+	currentSheet,
 	formatKr,
 	lastBoxPrice,
 	lastBoxSize,
@@ -18,7 +19,7 @@ import {
 	stockSummary,
 	totalSpent,
 } from "./stock";
-import type { Dose, StockEvent } from "./types";
+import type { Blister, Dose, StockEvent } from "./types";
 
 dayjs.locale("da");
 
@@ -47,7 +48,11 @@ function app() {
 	let stock: StockEvent[] = [];
 	let next = 0;
 
-	const addStock = (type: StockEvent["type"], amount: number) => {
+	const addStock = (
+		type: StockEvent["type"],
+		amount: number,
+		blister: Blister | null = null,
+	) => {
 		const event: StockEvent = {
 			id: `stock-${next++}`,
 			at: new Date().toISOString(),
@@ -55,6 +60,7 @@ function app() {
 			amount,
 			change: changeFor(type, amount, doses, stock),
 			price: null,
+			blister,
 		};
 		stock = [...stock, event];
 		return event.id;
@@ -72,7 +78,8 @@ function app() {
 		editDoseTime(id: string, takenAt: string) {
 			doses = doses.map((d) => (d.id === id ? { ...d, takenAt } : d));
 		},
-		box: (amount: number) => addStock("refill", amount),
+		box: (amount: number, blister: Blister | null = null) =>
+			addStock("refill", amount, blister),
 		count: (amount: number) => addStock("count", amount),
 		editStock(id: string, amount: number) {
 			stock = stock.map((e) =>
@@ -86,6 +93,7 @@ function app() {
 		},
 		left: () => balance(doses, stock),
 		status: () => stockStatus(doses, stock),
+		sheet: () => currentSheet(doses, stock),
 		stock: () => stock,
 	};
 }
@@ -281,6 +289,76 @@ describe("lastBoxSize", () => {
 		a.box(30);
 		a.count(12);
 		expect(lastBoxSize(a.stock())).toBe(30);
+	});
+});
+
+describe("blister sheet", () => {
+	const twoBySeven = { rows: 2, columns: 7 };
+
+	it("pops a pill for each dose, and starts a fresh sheet when one is done", () => {
+		const a = app();
+		a.box(28, twoBySeven);
+		expect(a.sheet()).toEqual({ ...twoBySeven, taken: 0, unopened: 1 });
+
+		for (let i = 3; i >= 1; i--) a.take(i);
+		expect(a.sheet()?.taken).toBe(3);
+
+		for (let i = 0; i < 11; i++) a.take(0);
+		// 14 taken: the first sheet is empty, the next one is untouched
+		expect(a.sheet()?.taken).toBe(0);
+
+		a.take(0);
+		expect(a.sheet()?.taken).toBe(1);
+	});
+
+	it("counts the full sheets left after the one in use", () => {
+		const a = app();
+		a.box(98, twoBySeven);
+		expect(a.sheet()?.unopened).toBe(6);
+		a.take(1);
+		expect(a.sheet()?.unopened).toBe(6);
+		a.count(15);
+		// 1 left on this sheet, one more full sheet
+		expect(a.sheet()).toMatchObject({ taken: 13, unopened: 1 });
+		a.count(14);
+		expect(a.sheet()).toMatchObject({ taken: 0, unopened: 0 });
+	});
+
+	it("follows a count", () => {
+		const a = app();
+		a.box(28, twoBySeven);
+		a.count(10);
+		expect(a.sheet()?.taken).toBe(4);
+	});
+
+	it("uses up the old box before the new one", () => {
+		const a = app();
+		a.box(30, { rows: 2, columns: 5 });
+		a.count(3);
+		a.box(28, twoBySeven);
+		// 3 left on the old 2×5 sheet, then the new box's two 2×7 sheets
+		expect(a.sheet()).toEqual({ rows: 2, columns: 5, taken: 7, unopened: 2 });
+
+		for (let i = 0; i < 3; i++) a.take(0);
+		expect(a.sheet()).toEqual({ ...twoBySeven, taken: 0, unopened: 1 });
+	});
+
+	it("falls back to the latest layout when the box in use has none", () => {
+		const a = app();
+		a.box(30);
+		a.count(3);
+		a.box(28, twoBySeven);
+		expect(a.sheet()).toEqual({ ...twoBySeven, taken: 11, unopened: 2 });
+	});
+
+	it("shows nothing without a layout or without pills", () => {
+		const a = app();
+		expect(a.sheet()).toBeNull();
+		a.box(28);
+		expect(a.sheet()).toBeNull();
+		a.box(28, twoBySeven);
+		a.count(0);
+		expect(a.sheet()).toBeNull();
 	});
 });
 

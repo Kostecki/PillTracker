@@ -1,5 +1,6 @@
 import {
 	ActionIcon,
+	Box,
 	Button,
 	Divider,
 	Group,
@@ -24,6 +25,7 @@ import {
 	changeFor,
 	DAYS_PER_MONTH,
 	formatKr,
+	lastBlister,
 	lastBoxPrice,
 	lastBoxSize,
 	pills,
@@ -33,8 +35,9 @@ import {
 	stockSummary,
 	totalSpent,
 } from "~/lib/stock";
-import type { StockEvent } from "~/lib/types";
+import type { Blister, StockEvent } from "~/lib/types";
 
+import { useBlisterFields } from "./BlisterFields";
 import { ConfirmModal } from "./ConfirmModal";
 import { EditStockModal } from "./EditStockModal";
 
@@ -67,13 +70,15 @@ export function StockModal(props: { opened: boolean; onClose: () => void }) {
 					key={`refill-${stock.length}`}
 					defaultAmount={lastBoxSize(stock)}
 					defaultPrice={lastBoxPrice(stock)}
-					onSubmit={(amount, price) =>
+					defaultBlister={lastBlister(stock)}
+					onSubmit={(amount, price, blister) =>
 						addStock.mutate(
 							newStockEvent(
 								"refill",
 								amount,
 								changeFor("refill", amount, doses, stock),
 								price,
+								blister,
 							),
 						)
 					}
@@ -116,7 +121,7 @@ export function StockModal(props: { opened: boolean; onClose: () => void }) {
 								<div>
 									<Text size="sm">
 										{event.type === "refill"
-											? `Ny æske · +${pills(event.amount)}${event.price != null ? ` · ${formatKr(event.price)}` : ""}`
+											? `Ny æske · +${pills(event.amount)}${event.blister ? ` · ${event.blister.rows}×${event.blister.columns}` : ""}${event.price != null ? ` · ${formatKr(event.price)}` : ""}`
 											: `Optælling · ${pills(event.amount)}`}
 									</Text>
 									<Text size="xs" c="dimmed">
@@ -175,7 +180,12 @@ function PriceRow(props: { label: string; value: string }) {
 function RefillForm(props: {
 	defaultAmount: number;
 	defaultPrice: number | null | undefined;
-	onSubmit: (amount: number, price: number | null) => void;
+	defaultBlister: Blister | null | undefined;
+	onSubmit: (
+		amount: number,
+		price: number | null,
+		blister: Blister | null,
+	) => void;
 }) {
 	const [amount, setAmount] = useState<string | number>(props.defaultAmount);
 	const [price, setPrice] = useState<string | number>(props.defaultPrice ?? "");
@@ -183,6 +193,7 @@ function RefillForm(props: {
 		typeof amount === "number" && Number.isInteger(amount) && amount >= 1;
 	// Price is optional: empty means unknown
 	const validPrice = price === "" || (typeof price === "number" && price >= 0);
+	const blister = useBlisterFields(props.defaultBlister);
 
 	return (
 		<Stack gap={4}>
@@ -213,12 +224,16 @@ function RefillForm(props: {
 					allowNegative={false}
 					inputMode="decimal"
 				/>
+			</Group>
+			<Group align="flex-end" gap="xs" wrap="nowrap">
+				<Box flex={1}>{blister.fields}</Box>
 				<Button
-					disabled={!validAmount || !validPrice}
+					disabled={!validAmount || !validPrice || !blister.valid}
 					onClick={() =>
 						props.onSubmit(
 							amount as number,
 							typeof price === "number" ? price : null,
+							blister.blister,
 						)
 					}
 				>
