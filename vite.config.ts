@@ -33,6 +33,12 @@ export default defineConfig({
 	},
 	server: {
 		port: 3000,
+		// A busy port means a server is already running: fail instead of
+		// starting another one on the next free port. Always on every address
+		// (reachable from the phone), so it clashes with a server started with
+		// --host too; on localhost only, macOS lets both run.
+		host: true,
+		strictPort: true,
 	},
 	resolve: {
 		tsconfigPaths: true,
