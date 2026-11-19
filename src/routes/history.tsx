@@ -89,6 +89,9 @@ function History() {
 								size={6}
 								offset={-4}
 								position="bottom-center"
+								// Mantine's default (200) ties with modals, so the dots
+								// could show through the edit dialog on top
+								zIndex={1}
 								disabled={!days.has(date)}
 							>
 								<div>{dayjs(date).date()}</div>
