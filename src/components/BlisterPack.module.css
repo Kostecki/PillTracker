@@ -58,10 +58,4 @@
 		box-shadow: none;
 		border: 2px dashed var(--mantine-color-default-border);
 	}
-
-	/* Today's pill, still to be taken */
-	&[data-state="next"] {
-		outline: 2px solid var(--mantine-primary-color-filled);
-		outline-offset: 2px;
-	}
 }

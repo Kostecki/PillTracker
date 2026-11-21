@@ -2,7 +2,6 @@ import { Stack, Text } from "@mantine/core";
 import { useQuery } from "@tanstack/react-query";
 import type { CSSProperties } from "react";
 
-import { todayKey } from "~/lib/dates";
 import { dosesQuery, stockQuery } from "~/lib/queries";
 import { currentSheet } from "~/lib/stock";
 
@@ -21,7 +20,6 @@ export function BlisterPack() {
 	if (!sheet) return null;
 
 	const size = sheet.rows * sheet.columns;
-	const takenToday = doses.some((d) => d.day === todayKey());
 	// Every unopened sheet peeks out behind the open one
 	const behind = sheet.unopened;
 
@@ -55,13 +53,7 @@ export function BlisterPack() {
 							// biome-ignore lint/suspicious/noArrayIndexKey: cells are positions
 							key={i}
 							className={classes.pill}
-							data-state={
-								i < sheet.taken
-									? "taken"
-									: i === sheet.taken && !takenToday
-										? "next"
-										: "left"
-							}
+							data-state={i < sheet.taken ? "taken" : "left"}
 						/>
 					))}
 				</div>
